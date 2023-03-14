@@ -6,6 +6,6 @@ import (
 )
 
 func Routes(e *echo.Echo) {
-	version := e.Group("/v1")
-	version.POST("/auth", v1.Auth)
+	version := e.Group("/api/v1")
+	version.POST("/login", v1.Auth)
 }
