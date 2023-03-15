@@ -17,12 +17,11 @@ func Auth(c echo.Context) error {
 	// Call keycloak service API
 	res_data, status, err := keycloak.Auth_Keycloak(user)
 	if err != nil {
-		return c.JSON(status, map[string]string{"error": err.Error()})
-	}
-
-	// Check if API return data but error
-	if _, ok := res_data["error"]; ok {
-		return c.JSON(status, res_data)
+		if err.Error() == "Error" { // Check if API return error
+			return c.JSON(status, map[string]string{"error": res_data["error"].(string)})
+		} else {
+			return c.JSON(status, map[string]string{"error": err.Error()})
+		}
 	}
 
 	// Get userID and user's name from database
