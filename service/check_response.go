@@ -39,11 +39,19 @@ func CheckResponse(res *http.Response) (map[string]interface{}, error) {
 		}
 
 		var jsonObj map[string]interface{}
+		var jsonArr []map[string]interface{}
+		// check response body type is array of object or object
+		if body[0] == '[' {
+			err = json.Unmarshal([]byte(body), &jsonArr)
+			if err != nil {
+				return nil, err
+			}
+			return jsonArr[0], nil
+		}
 		err = json.Unmarshal([]byte(body), &jsonObj)
 		if err != nil {
 			return nil, err
 		}
-
 		return jsonObj, nil
 	}
 }
