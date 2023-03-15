@@ -1,6 +1,7 @@
 package keycloak
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
 	"os"
@@ -11,6 +12,31 @@ import (
 )
 
 func Auth_Keycloak(Login *models.Login) (map[string]interface{}, int, error) {
+	// check email is verified
+	res_data, status, err := ManageUserToken()
+	if err != nil {
+		return nil, status, err
+	}
+
+	// get user's id
+	req, err := http.NewRequest("GET", os.Getenv("KEYCLOAK_ADMINAPI")+"/users?email="+Login.Username, nil)
+	if err != nil {
+		return nil, 500, err
+	}
+	req.Header.Set("Authorization", "Bearer "+res_data["access_token"].(string))
+
+	res_data, status, err = service.DoRequest(req)
+	if err != nil {
+		return res_data, status, err
+	}
+
+	if res_data["emailVerified"] == false {
+		error_data := make(map[string]interface{})
+		error_data["error"] = "Your email not verify"
+
+		return error_data, 401, errors.New("Error")
+	}
+
 	// call keycloak API and return token
 	formData := url.Values{}
 	formData.Set("grant_type", os.Getenv("GRANT_TYPE"))
@@ -21,23 +47,17 @@ func Auth_Keycloak(Login *models.Login) (map[string]interface{}, int, error) {
 	body := formData.Encode()
 
 	// Create request
-	req, err := http.NewRequest("POST", os.Getenv("KEYCLOAK_OPENIDAPI")+"/protocol/openid-connect/token", strings.NewReader(body))
+	req, err = http.NewRequest("POST", os.Getenv("KEYCLOAK_OPENIDAPI")+"/protocol/openid-connect/token", strings.NewReader(body))
 	if err != nil {
 		return nil, 500, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	// Send request
-	client := &http.Client{}
-	res, err := client.Do(req)
+	res_data, status, err = service.DoRequest(req)
 	if err != nil {
-		return nil, 500, err
+		return res_data, status, err
 	}
 
-	data, err := service.CheckResponse(res)
-	if err != nil {
-		return nil, 500, err
-	}
-
-	return data, res.StatusCode, nil
+	return res_data, status, nil
 }
