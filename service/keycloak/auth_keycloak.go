@@ -11,7 +11,7 @@ import (
 	"github.com/Spc-CXCVIII/GoAPI_Keycloak/service"
 )
 
-func Auth_Keycloak(Login *models.Login) (map[string]interface{}, int, error) {
+func LoginKeycloak(Login *models.Login) (map[string]interface{}, int, error) {
 	// check email is verified
 	res_data, status, err := ManageUserToken()
 	if err != nil {
@@ -60,4 +60,14 @@ func Auth_Keycloak(Login *models.Login) (map[string]interface{}, int, error) {
 	}
 
 	return res_data, status, nil
+}
+
+func LogoutKeycloak() (map[string]interface{}, int, error) {
+	return_data := make(map[string]interface{})
+	return_data["message"] = "Logout success"
+	return return_data, 200, nil
+}
+
+func UserIDFromToken() (map[string]interface{}, int, error) {
+	return nil, 0, nil
 }
