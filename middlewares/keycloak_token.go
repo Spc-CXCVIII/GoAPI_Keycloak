@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	cus_cache "github.com/Spc-CXCVIII/GoAPI_Keycloak/cache"
+	"github.com/Spc-CXCVIII/GoAPI_Keycloak/models"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
@@ -58,6 +60,39 @@ func ValidateToken(next echo.HandlerFunc) echo.HandlerFunc {
 			error_message["error"] = "Unauthorized"
 			return c.JSON(http.StatusUnauthorized, error_message)
 		}
+
+		claims, ok := token.Claims.(jwt.MapClaims) // data from token
+		if !ok {
+			error_message["error"] = "Unable to extract claims from token"
+			return c.JSON(http.StatusUnauthorized, error_message)
+		}
+
+		claimsMap := make(map[string]interface{})
+		for key, value := range claims {
+			claimsMap[key] = value
+		}
+
+		id_req := new(models.UserIDRequest)
+		if err := c.Bind(id_req); err != nil {
+			return c.JSON(400, map[string]string{"error": "Invalid request payload"})
+		}
+
+		// set user's id from request. Can use only in this request
+		c.Set("id_req", id_req.ID)
+		c.Set("email", claims["email"])
+		c.Set("id_token", claims["sub"])
+
+		data, status, err := CheckUserID(claims["email"].(string), id_req.ID)
+		if err != nil {
+			if err.Error() == "Error" {
+				return c.JSON(status, map[string]string{"error": data["error"].(string)})
+			} else {
+				return c.JSON(status, map[string]string{"error": err.Error()})
+			}
+		}
+
+		// cache data
+		cus_cache.AddData(claims["sub"].(string), claimsMap)
 
 		// Call the next handler
 		return next(c)
