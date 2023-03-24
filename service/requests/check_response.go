@@ -1,4 +1,4 @@
-package service
+package requests
 
 import (
 	"encoding/json"
@@ -33,6 +33,16 @@ func CheckResponse(res *http.Response) (map[string]interface{}, error) {
 
 		return error_data, nil
 	} else {
+		if res.StatusCode == 201 {
+			return nil, nil
+		}
+
+		if res.StatusCode == 204 {
+			return nil, nil
+		}
+
+		fmt.Println("Response status code:", res.StatusCode)
+
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			return nil, err
