@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Spc-CXCVIII/GoAPI_Keycloak/service"
+	"github.com/Spc-CXCVIII/GoAPI_Keycloak/service/requests"
 )
 
 func ManageUserToken() (map[string]interface{}, int, error) {
@@ -27,7 +27,7 @@ func ManageUserToken() (map[string]interface{}, int, error) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	// Send request
-	res_data, status, err := service.DoRequest(req)
+	res_data, status, err := requests.DoRequest(req)
 	if err != nil {
 		return res_data, status, err
 	}
