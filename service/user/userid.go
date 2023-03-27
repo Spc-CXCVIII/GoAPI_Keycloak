@@ -2,18 +2,17 @@ package user
 
 import (
 	"github.com/Spc-CXCVIII/GoAPI_Keycloak/database"
-	"github.com/Spc-CXCVIII/GoAPI_Keycloak/models"
 )
 
 func UserIDFromTokenDB(email string) (interface{}, int, error) {
-	user_id := new(models.UserID)
+	var user_id int
 	query := `SELECT id
 						FROM users
 						WHERE email = ?`
-	err := database.DB.QueryRow(query, email).Scan(&user_id.ID)
+	err := database.DB.QueryRow(query, email).Scan(&user_id)
 	if err != nil {
 		return 0, 500, err
 	}
 
-	return user_id.ID, 200, nil
+	return user_id, 200, nil
 }

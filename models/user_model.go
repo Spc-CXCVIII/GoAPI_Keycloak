@@ -5,10 +5,6 @@ type UserDataInToken struct {
 	Name string
 }
 
-type UserID struct {
-	ID int
-}
-
 type UserIDToken struct {
 	ID string
 }
